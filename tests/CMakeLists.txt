@@ -1,0 +1,10 @@
+add_library(test_main OBJECT test_main.cpp)
+target_link_libraries(test_main PUBLIC mavgs_options)
+
+function(mavgs_add_test name)
+  add_executable(${name} ${name}.cpp)
+  target_link_libraries(${name} PRIVATE mavgs test_main)
+  add_test(NAME ${name} COMMAND ${name})
+endfunction()
+
+mavgs_add_test(test_frame)
