@@ -28,6 +28,7 @@ add_library(mavgs STATIC
   src/frame.cpp
   src/link.cpp
   src/messages.cpp
+  src/mission.cpp
   src/stats.cpp
   src/tlog.cpp
 )
