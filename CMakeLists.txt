@@ -26,7 +26,10 @@ endif()
 
 add_library(mavgs STATIC
   src/frame.cpp
+  src/link.cpp
   src/messages.cpp
+  src/stats.cpp
+  src/tlog.cpp
 )
 target_include_directories(mavgs PUBLIC include PRIVATE src)
 target_link_libraries(mavgs PUBLIC mavgs_options)
