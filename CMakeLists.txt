@@ -30,6 +30,7 @@ add_library(mavgs STATIC
   src/link.cpp
   src/messages.cpp
   src/mission.cpp
+  src/sim.cpp
   src/station.cpp
   src/stats.cpp
   src/tlog.cpp
