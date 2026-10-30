@@ -13,3 +13,14 @@ mavgs_add_test(test_mission)
 mavgs_add_test(test_stats_tlog_link)
 mavgs_add_test(test_sim)
 mavgs_add_test(test_station)
+mavgs_add_test(test_cli_script)
+
+if(MAVGS_BUILD_APPS)
+  find_program(BASH_PROGRAM bash)
+  if(BASH_PROGRAM)
+    add_test(NAME e2e_udp
+             COMMAND ${BASH_PROGRAM} ${CMAKE_CURRENT_SOURCE_DIR}/e2e_udp.sh
+                     $<TARGET_FILE_DIR:mavgcs> ${PROJECT_SOURCE_DIR})
+    set_tests_properties(e2e_udp PROPERTIES TIMEOUT 120)
+  endif()
+endif()
