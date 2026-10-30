@@ -25,12 +25,15 @@ if(MAVGS_SANITIZE)
 endif()
 
 add_library(mavgs STATIC
+  src/dashboard.cpp
   src/frame.cpp
   src/link.cpp
   src/messages.cpp
   src/mission.cpp
+  src/station.cpp
   src/stats.cpp
   src/tlog.cpp
+  src/vehicle_state.cpp
 )
 target_include_directories(mavgs PUBLIC include PRIVATE src)
 target_link_libraries(mavgs PUBLIC mavgs_options)
