@@ -2,7 +2,6 @@
 
 #include <algorithm>
 #include <cmath>
-#include <cstdarg>
 #include <cstdio>
 #include <sstream>
 
@@ -10,14 +9,10 @@ namespace mavgs {
 
 namespace {
 
-std::string fmt(const char* format, ...) __attribute__((format(printf, 1, 2)));
-
-std::string fmt(const char* format, ...) {
+template <typename... Args>
+std::string fmt(const char* format, Args... args) {
   char buffer[256];
-  va_list args;
-  va_start(args, format);
-  std::vsnprintf(buffer, sizeof buffer, format, args);
-  va_end(args);
+  std::snprintf(buffer, sizeof buffer, format, args...);
   return buffer;
 }
 
@@ -65,7 +60,7 @@ std::string mission_text(const Station& s) {
       text = s.mission_size() > 0 ? fmt("%zu items on vehicle", s.mission_size()) : "none uploaded";
       break;
   }
-  if (s.vehicle().mission_current) text += fmt("   current wp %u", *s.vehicle().mission_current);
+  if (const auto current = s.vehicle().mission_current) text += fmt("   current wp %u", *current);
   return text;
 }
 
@@ -134,7 +129,7 @@ std::string render_dashboard(const Station& s, const RenderOptions& o) {
   for (std::size_t i = shown; i < o.max_events; ++i) out << "\n";
 
   out << std::string(72, '-') << "\n";
-  out << " [a]rm  [d]isarm  [t]akeoff  [l]and  [r]tl  [m]ission upload  [s]tart mission  [q]uit\n";
+  out << " [a]rm [d]isarm [t]akeoff [l]and [r]tl [m]ission [s]tart [q]uit\n";
   return out.str();
 }
 
