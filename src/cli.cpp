@@ -1,5 +1,6 @@
 #include "mavgs/cli.hpp"
 
+#include <algorithm>
 #include <cmath>
 #include <cstdlib>
 #include <sstream>
@@ -10,10 +11,9 @@ ArgParser::ArgParser(std::string program, std::string summary, std::vector<Optio
     : program_(std::move(program)), summary_(std::move(summary)), options_(std::move(options)) {}
 
 const OptionSpec* ArgParser::find(const std::string& name) const {
-  for (const auto& option : options_) {
-    if (option.name == name) return &option;
-  }
-  return nullptr;
+  const auto it = std::find_if(options_.begin(), options_.end(),
+                               [&name](const OptionSpec& option) { return option.name == name; });
+  return it == options_.end() ? nullptr : &*it;
 }
 
 void ArgParser::parse(int argc, const char* const* argv) {

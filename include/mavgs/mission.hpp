@@ -39,10 +39,12 @@ inline constexpr std::size_t kMaxMissionItems = 700;
 
 /// Parses the plain-text mission format:
 ///
-///   takeoff <alt_m>
-///   waypoint <lat> <lon> <alt_m> [hold_s]
-///   land [<lat> <lon>]
-///   rtl
+/// @code
+/// takeoff <alt_m>
+/// waypoint <lat> <lon> <alt_m> [hold_s]
+/// land [<lat> <lon>]
+/// rtl
+/// @endcode
 ///
 /// '#' starts a comment. Throws MissionParseError with the offending line.
 [[nodiscard]] std::vector<MissionItem> parse_mission(std::istream& in);
@@ -53,7 +55,7 @@ inline constexpr std::size_t kMaxMissionItems = 700;
 /// Pure state machine: it returns messages to send and never touches I/O.
 class MissionUploader {
  public:
-  enum class State { Idle, Uploading, Done, Failed };
+  enum class State : std::uint8_t { Idle, Uploading, Done, Failed };
 
   static constexpr std::uint64_t kRetryUs = 1'000'000;
   static constexpr int kMaxRetries = 5;

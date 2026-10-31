@@ -25,6 +25,8 @@ class Link {
   Link() = default;
   Link(const Link&) = delete;
   Link& operator=(const Link&) = delete;
+  Link(Link&&) = delete;
+  Link& operator=(Link&&) = delete;
   virtual ~Link() = default;
 
   /// Sends one datagram; false when there is nowhere to send it.
@@ -42,8 +44,12 @@ class UdpLink final : public Link {
  public:
   /// Binds `bind_port` on all interfaces (0 picks a free port). `peer` is the
   /// initial destination before anything has been received.
-  explicit UdpLink(std::uint16_t bind_port, std::optional<Endpoint> peer = std::nullopt);
+  explicit UdpLink(std::uint16_t bind_port, const std::optional<Endpoint>& peer = std::nullopt);
   ~UdpLink() override;
+  UdpLink(const UdpLink&) = delete;
+  UdpLink& operator=(const UdpLink&) = delete;
+  UdpLink(UdpLink&&) = delete;
+  UdpLink& operator=(UdpLink&&) = delete;
 
   [[nodiscard]] bool send(const Bytes& datagram) override;
   [[nodiscard]] bool receive(Bytes& out, std::chrono::milliseconds timeout) override;
@@ -64,14 +70,15 @@ class ReplayLink final : public Link {
  public:
   ReplayLink(std::vector<TlogRecord> records, double speed, std::string source);
 
-  [[nodiscard]] bool send(const Bytes&) override { return false; }
+  [[nodiscard]] bool send(const Bytes& /*datagram*/) override { return false; }
   [[nodiscard]] bool receive(Bytes& out, std::chrono::milliseconds timeout) override;
   [[nodiscard]] std::string describe() const override;
   [[nodiscard]] bool is_replay() const override { return true; }
   [[nodiscard]] bool finished() const { return next_ >= records_.size(); }
 
  private:
-  [[nodiscard]] std::chrono::steady_clock::time_point due(std::size_t index) const;
+  [[nodiscard]] std::chrono::steady_clock::time_point due(
+      std::size_t index, std::chrono::steady_clock::time_point start) const;
 
   std::vector<TlogRecord> records_;
   double speed_;

@@ -12,6 +12,8 @@ class KeyboardMode {
   ~KeyboardMode();
   KeyboardMode(const KeyboardMode&) = delete;
   KeyboardMode& operator=(const KeyboardMode&) = delete;
+  KeyboardMode(KeyboardMode&&) = delete;
+  KeyboardMode& operator=(KeyboardMode&&) = delete;
 
   /// Returns the next pressed key, or -1 if none is waiting.
   [[nodiscard]] int poll_key() const;

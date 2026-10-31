@@ -315,7 +315,7 @@ bool try_decode(const Frame& frame, std::optional<Message>& out) {
 }
 
 template <typename... Ms>
-std::optional<Message> decode_any(const Frame& frame, std::variant<Ms...>*) {
+std::optional<Message> decode_any(const Frame& frame, std::variant<Ms...>* /*tag*/) {
   std::optional<Message> out;
   (void)(try_decode<Ms>(frame, out) || ...);
   return out;

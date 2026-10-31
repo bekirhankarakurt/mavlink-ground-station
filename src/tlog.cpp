@@ -14,7 +14,7 @@ TlogWriter::TlogWriter(const std::string& path) : out_(path, std::ios::binary | 
 void TlogWriter::append(std::uint64_t timestamp_us, const Bytes& frame) {
   char stamp[8];
   for (int i = 0; i < 8; ++i) {
-    stamp[i] = static_cast<char>((timestamp_us >> (8 * (7 - i))) & 0xFFu);
+    stamp[i] = static_cast<char>((timestamp_us >> (8 * (7 - i))) & 0xFFU);
   }
   out_.write(stamp, sizeof stamp);
   out_.write(reinterpret_cast<const char*>(frame.data()),

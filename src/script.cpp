@@ -85,7 +85,10 @@ void ScriptRunner::advance(Station& station) {
           case ScriptStep::Kind::Rtl: sent = station.return_to_launch(); break;
           default: sent = station.start_mission(); break;
         }
-        if (!sent) return fail("could not be sent");
+        if (!sent) {
+          fail("could not be sent");
+          return;
+        }
         issued_ = true;
         return;
       }
@@ -99,7 +102,10 @@ void ScriptRunner::advance(Station& station) {
     }
     case ScriptStep::Kind::UploadMission:
       if (!issued_) {
-        if (!station.upload_mission(step.items)) return fail("upload could not start");
+        if (!station.upload_mission(step.items)) {
+          fail("upload could not start");
+          return;
+        }
         issued_ = true;
         return;
       }
