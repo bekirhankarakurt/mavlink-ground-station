@@ -39,3 +39,98 @@ jobs:
         run: cmake --build build --parallel
       - name: Test
         run: ctest --test-dir build --output-on-failure
+
+  static-analysis:
+    name: cppcheck + clang-tidy
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install tools
+        run: sudo apt-get update && sudo apt-get install -y cppcheck clang-tidy
+      - name: cppcheck
+        run: |
+          cppcheck --enable=warning,style,performance,portability --error-exitcode=1 --inline-suppr \
+            --suppress=useStlAlgorithm --suppress=knownConditionTrueFalse:tests/test_main.cpp \
+            --suppress=missingIncludeSystem -I include -I tests -q include src apps tests
+      - name: clang-tidy
+        run: |
+          cmake -S . -B build -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DCMAKE_BUILD_TYPE=Release
+          ls src/*.cpp apps/*.cpp | xargs -P"$(nproc)" -n1 clang-tidy -p build --quiet
+
+  coverage:
+    name: coverage (gcovr)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install gcovr
+        run: sudo apt-get update && sudo apt-get install -y gcovr
+      - name: Build with coverage
+        run: |
+          cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug \
+            -DCMAKE_CXX_FLAGS="--coverage -O0" -DCMAKE_EXE_LINKER_FLAGS="--coverage"
+          cmake --build build --parallel
+      - name: Test
+        run: ctest --test-dir build --output-on-failure
+      - name: Report
+        run: |
+          mkdir coverage
+          gcovr -r . build --filter 'src/' --filter 'include/' --filter 'apps/' \
+            --print-summary --html-details coverage/index.html --json-summary coverage/summary.json
+          python3 - <<'PY'
+          import json
+          pct = json.load(open("coverage/summary.json"))["line_percent"]
+          color = ("brightgreen" if pct >= 90 else "green" if pct >= 80 else
+                   "yellowgreen" if pct >= 70 else "yellow" if pct >= 60 else "orange")
+          badge = {"schemaVersion": 1, "label": "coverage", "message": f"{pct:.0f}%", "color": color}
+          json.dump(badge, open("coverage.json", "w"))
+          print(badge)
+          PY
+          cp coverage.json coverage/coverage.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: coverage-site
+          path: coverage
+
+  docs:
+    name: API docs (Doxygen)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Doxygen
+        run: sudo apt-get update && sudo apt-get install -y doxygen
+      - name: Build
+        run: doxygen Doxyfile
+      - uses: actions/upload-artifact@v4
+        with:
+          name: api-docs
+          path: build-docs/html
+
+  deploy-pages:
+    name: Deploy docs and coverage to Pages
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: [build, sanitizers, static-analysis, coverage, docs]
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: api-docs
+          path: site
+      - uses: actions/download-artifact@v4
+        with:
+          name: coverage-site
+          path: site/coverage
+      - run: cp site/coverage/coverage.json site/coverage.json
+      - uses: actions/configure-pages@v5
+        with:
+          enablement: true
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+      - id: deployment
+        uses: actions/deploy-pages@v4
