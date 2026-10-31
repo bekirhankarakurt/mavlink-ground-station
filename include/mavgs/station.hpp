@@ -29,7 +29,7 @@ struct Event {
   std::string text;
 };
 
-enum class CommandStatus { Idle, Pending, Accepted, Rejected, TimedOut };
+enum class CommandStatus : std::uint8_t { Idle, Pending, Accepted, Rejected, TimedOut };
 
 /// Ground-station core: owns protocol state and talks to a Link. Single
 /// threaded; drive it by calling service() in a loop. Times are caller

@@ -10,7 +10,7 @@
 namespace mavgs {
 
 struct ScriptStep {
-  enum class Kind { Arm, Disarm, Takeoff, Land, Rtl, StartMission, UploadMission, Wait, WaitDisarmed };
+  enum class Kind : std::uint8_t { Arm, Disarm, Takeoff, Land, Rtl, StartMission, UploadMission, Wait, WaitDisarmed };
   Kind kind = Kind::Wait;
   double value = 0;                ///< altitude (Takeoff) or seconds (Wait)
   std::vector<MissionItem> items;  ///< UploadMission
@@ -18,7 +18,9 @@ struct ScriptStep {
 };
 
 /// Parses a comma-separated step list:
-///   arm, disarm, takeoff:<alt_m>, land, rtl, start, mission:<file>, wait:<s>, wait-disarmed
+/// @code
+/// arm, disarm, takeoff:<alt_m>, land, rtl, start, mission:<file>, wait:<s>, wait-disarmed
+/// @endcode
 /// Mission files are read at parse time. Throws std::invalid_argument.
 [[nodiscard]] std::vector<ScriptStep> parse_script(const std::string& text);
 

@@ -11,8 +11,8 @@ namespace {
 constexpr double kRadToDeg = 57.29577951308232;
 
 std::string px4_mode(std::uint32_t custom_mode) {
-  const auto main = static_cast<std::uint8_t>((custom_mode >> 16) & 0xFFu);
-  const auto sub = static_cast<std::uint8_t>((custom_mode >> 24) & 0xFFu);
+  const auto main = static_cast<std::uint8_t>((custom_mode >> 16) & 0xFFU);
+  const auto sub = static_cast<std::uint8_t>((custom_mode >> 24) & 0xFFU);
   switch (main) {
     case px4::kMainManual: return "MANUAL";
     case px4::kMainAltctl: return "ALTCTL";
@@ -86,7 +86,7 @@ void VehicleState::apply(const Message& message, std::uint64_t now_us) {
     Battery b;
     b.volts = ss->voltage_battery == 0xFFFF ? 0.0 : ss->voltage_battery / 1000.0;
     b.amps = ss->current_battery < 0 ? 0.0 : ss->current_battery / 100.0;
-    b.percent = ss->battery_remaining;
+    b.percent = ss->battery_remaining < 0 ? -1 : static_cast<int>(static_cast<std::uint8_t>(ss->battery_remaining));
     battery = b;
   } else if (const auto* att = std::get_if<Attitude>(&message)) {
     attitude = Orientation{att->roll * kRadToDeg, att->pitch * kRadToDeg, att->yaw * kRadToDeg};

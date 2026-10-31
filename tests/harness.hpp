@@ -30,7 +30,7 @@ class LoopLink final : public mavgs::Link {
 
 /// Station wired to a VehicleSim over a LoopLink with a simulated clock.
 struct Harness {
-  explicit Harness(mavgs::SimConfig config = {}) : station(link, {}), sim(config) {}
+  explicit Harness(const mavgs::SimConfig& config = {}) : station(link, {}), sim(config) {}
 
   void run(double seconds, std::uint64_t step_us = 20'000) {
     const auto end = now_us + static_cast<std::uint64_t>(seconds * 1e6);

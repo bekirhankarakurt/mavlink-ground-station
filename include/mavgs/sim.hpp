@@ -28,7 +28,7 @@ struct SimConfig {
 /// caller-supplied time; the executable wires it to a UDP socket.
 class VehicleSim {
  public:
-  enum class Mode { Idle, Takeoff, Hold, Mission, Rtl, Land };
+  enum class Mode : std::uint8_t { Idle, Takeoff, Hold, Mission, Rtl, Land };
 
   explicit VehicleSim(SimConfig config);
 

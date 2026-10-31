@@ -26,6 +26,12 @@ std::uint16_t frame_crc(const std::uint8_t* frame, std::size_t payload_len, std:
   return crc_accumulate(extra, crc);
 }
 
+/// Total frame size from the first three header bytes (length, incompat flags).
+std::size_t wire_length(const std::uint8_t* frame) {
+  const std::size_t signature = (frame[2] & kIncompatSigned) != 0 ? kSignatureSize : 0;
+  return kHeaderSize + frame[1] + kChecksumSize + signature;
+}
+
 }  // namespace
 
 Bytes serialize(const Frame& frame) {
@@ -46,23 +52,21 @@ Bytes serialize(const Frame& frame) {
   out.push_back(frame.seq);
   out.push_back(frame.sysid);
   out.push_back(frame.compid);
-  out.push_back(static_cast<std::uint8_t>(frame.msgid & 0xFFu));
-  out.push_back(static_cast<std::uint8_t>((frame.msgid >> 8) & 0xFFu));
-  out.push_back(static_cast<std::uint8_t>((frame.msgid >> 16) & 0xFFu));
+  out.push_back(static_cast<std::uint8_t>(frame.msgid & 0xFFU));
+  out.push_back(static_cast<std::uint8_t>((frame.msgid >> 8) & 0xFFU));
+  out.push_back(static_cast<std::uint8_t>((frame.msgid >> 16) & 0xFFU));
   out.insert(out.end(), frame.payload.begin(),
              frame.payload.begin() + static_cast<std::ptrdiff_t>(len));
 
   const std::uint16_t crc = frame_crc(out.data(), len, *extra);
-  out.push_back(static_cast<std::uint8_t>(crc & 0xFFu));
+  out.push_back(static_cast<std::uint8_t>(crc & 0xFFU));
   out.push_back(static_cast<std::uint8_t>(crc >> 8));
   return out;
 }
 
 std::optional<std::size_t> frame_length(const std::uint8_t* data, std::size_t avail) {
   if (avail < 3 || data[0] != kMagicV2) return std::nullopt;
-  std::size_t total = kHeaderSize + data[1] + kChecksumSize;
-  if ((data[2] & kIncompatSigned) != 0) total += kSignatureSize;
-  return total;
+  return wire_length(data);
 }
 
 std::vector<ParsedFrame> Parser::feed(const std::uint8_t* data, std::size_t size) {
@@ -85,7 +89,7 @@ std::vector<ParsedFrame> Parser::feed(const std::uint8_t* data, std::size_t size
       ++stats_.discarded_bytes;
       continue;
     }
-    const std::size_t total = *frame_length(p, avail);
+    const std::size_t total = wire_length(p);
     if (avail < total) break;
 
     const std::size_t len = p[1];
@@ -95,7 +99,7 @@ std::vector<ParsedFrame> Parser::feed(const std::uint8_t* data, std::size_t size
     const auto extra = crc_extra(msgid);
     if (extra) {
       const std::uint16_t expected = frame_crc(p, len, *extra);
-      const std::uint16_t got = static_cast<std::uint16_t>(
+      const auto got = static_cast<std::uint16_t>(
           p[kHeaderSize + len] | (static_cast<unsigned>(p[kHeaderSize + len + 1]) << 8));
       if (expected != got) {
         ++stats_.crc_errors;

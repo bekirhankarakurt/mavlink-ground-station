@@ -114,7 +114,8 @@ void VehicleSim::fly_towards(double target_n, double target_e, double target_up,
   const double dn = target_n - north_;
   const double de = target_e - east_;
   const double dist = std::hypot(dn, de);
-  double des_vn = 0, des_ve = 0;
+  double des_vn = 0;
+  double des_ve = 0;
   if (dist > 0.05) {
     const double speed = std::min(config_.cruise_speed, dist * 0.8);
     des_vn = dn / dist * speed;
@@ -267,7 +268,9 @@ void VehicleSim::advance_physics(double dt) {
   roll_rate_ = (roll_ - prev_roll) / dt;
   pitch_rate_ = (pitch_ - prev_pitch) / dt;
   yaw_rate_ = wrap_pi(yaw_ - prev_yaw) / dt;
-  charge_ = std::max(0.0, charge_ - dt * (armed_ ? (airborne() ? 0.06 : 0.01) : 0.0));
+  double drain = 0.0;  // % per second
+  if (armed_) drain = airborne() ? 0.06 : 0.01;
+  charge_ = std::max(0.0, charge_ - dt * drain);
 }
 
 // ---------------------------------------------------------------- telemetry
@@ -308,7 +311,9 @@ std::vector<Bytes> VehicleSim::step(std::uint64_t now_us) {
     s.load = 180;
     const double mv = kBatteryEmptyMv + (kBatteryFullMv - kBatteryEmptyMv) * charge_ / 100.0;
     s.voltage_battery = static_cast<std::uint16_t>(mv);
-    s.current_battery = static_cast<std::int16_t>(armed_ ? (airborne() ? 1050 : 300) : 40);
+    std::int16_t current = 40;  // cA
+    if (armed_) current = airborne() ? 1050 : 300;
+    s.current_battery = current;
     s.battery_remaining = static_cast<std::int8_t>(std::lround(charge_));
     emit(s, out);
   }
