@@ -1,0 +1,36 @@
+name: Bug report
+description: Something does not work as documented
+labels: [bug]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+      description: What did you expect, and what did you see instead?
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Steps to reproduce
+      description: Exact commands, including simulator or vehicle setup. Attach a .tlog if relevant.
+      render: shell
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Version or commit
+      placeholder: v1.0.0
+    validations:
+      required: true
+  - type: input
+    id: env
+    attributes:
+      label: OS and compiler
+      placeholder: Ubuntu 24.04, GCC 13
+  - type: input
+    id: vehicle
+    attributes:
+      label: Vehicle / autopilot
+      description: mavsim, PX4 SITL, ArduPilot, hardware
