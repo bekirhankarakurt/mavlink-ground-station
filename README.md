@@ -1,11 +1,18 @@
 # mavlink-ground-station
 
+![mavgcs flying a mission against the built-in simulator](docs/demo.gif)
+
 Lightweight MAVLink v2 ground control station in C++17 with zero dependencies: live telemetry, link-quality stats, arm/takeoff/RTL, mission upload, recording and replay, plus a built-in vehicle simulator so everything runs without hardware.
 
 [![CI](https://github.com/bekirhankarakurt/mavlink-ground-station/actions/workflows/ci.yml/badge.svg)](https://github.com/bekirhankarakurt/mavlink-ground-station/actions/workflows/ci.yml)
+[![CodeQL](https://github.com/bekirhankarakurt/mavlink-ground-station/actions/workflows/codeql.yml/badge.svg)](https://github.com/bekirhankarakurt/mavlink-ground-station/actions/workflows/codeql.yml)
+[![Coverage](https://img.shields.io/endpoint?url=https%3A%2F%2Fbekirhankarakurt.github.io%2Fmavlink-ground-station%2Fcoverage.json)](https://bekirhankarakurt.github.io/mavlink-ground-station/coverage/)
+[![Release](https://img.shields.io/github/v/release/bekirhankarakurt/mavlink-ground-station)](https://github.com/bekirhankarakurt/mavlink-ground-station/releases/latest)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![C++17](https://img.shields.io/badge/C%2B%2B-17-00599C.svg)](https://en.cppreference.com/w/cpp/17)
-[![Platform: Linux](https://img.shields.io/badge/platform-Linux-lightgrey.svg)](#requirements)
+[![Platform: Linux](https://img.shields.io/badge/platform-Linux-lightgrey.svg)](https://github.com/bekirhankarakurt/mavlink-ground-station#requirements)
+
+**Documentation:** [API reference and coverage report](https://bekirhankarakurt.github.io/mavlink-ground-station/) | [Releases](https://github.com/bekirhankarakurt/mavlink-ground-station/releases) | [Changelog](CHANGELOG.md)
 
 ## Why / what
 
@@ -41,7 +48,7 @@ MAVLink GCS  udp:14550  system 1  LINK OK
  [    8.7s] vehicle: Reached waypoint 2
  [   11.2s] vehicle: Reached waypoint 3
 ------------------------------------------------------------------------
- [a]rm  [d]isarm  [t]akeoff  [l]and  [r]tl  [m]ission upload  [s]tart mission  [q]uit
+ [a]rm [d]isarm [t]akeoff [l]and [r]tl [m]ission [s]tart [q]uit
 
 ```
 
@@ -264,7 +271,7 @@ ctest --test-dir build --output-on-failure
 | `test_cli_script` | option parsing, script parsing and execution against the simulator |
 | `e2e_udp` | `mavsim` and `mavgcs` over UDP: fly, record, replay, frame counts match |
 
-CI runs GCC and Clang in Release with `-Werror`, plus a GCC ASan/UBSan job.
+CI runs GCC and Clang in Release with `-Werror`, a GCC ASan/UBSan job, `cppcheck` and `clang-tidy` (see `.clang-tidy`), line coverage (published as the badge above) and CodeQL. Tagged releases (`v*`) build `linux-x86_64` and `linux-aarch64` tarballs with checksums.
 
 ## Troubleshooting / FAQ
 
@@ -301,8 +308,12 @@ src/                  implementations + crc_extra_table.hpp (generated)
 apps/                 mavgcs.cpp, mavsim.cpp
 tests/                unit tests, simulator harness, UDP end-to-end script
 examples/             mission_square.txt
+docs/                 demo.gif, demo.cast and record_demo.sh (re-records the GIF)
+Doxyfile              API documentation (published to GitHub Pages)
+.clang-tidy           static-analysis configuration
+CHANGELOG.md CONTRIBUTING.md SECURITY.md   project policies
 tools/                gen_crc_extra.py (regenerates the CRC_EXTRA table)
-.github/workflows/    CI (GCC, Clang, ASan/UBSan)
+.github/workflows/    ci.yml (build, sanitizers, static analysis, coverage, docs), codeql.yml, release.yml
 ```
 
 ## Roadmap
@@ -321,6 +332,6 @@ tools/                gen_crc_extra.py (regenerates the CRC_EXTRA table)
 
 ## License
 
-MIT, see [LICENSE](LICENSE).
+MIT, see [LICENSE](LICENSE). Contributions: [CONTRIBUTING.md](CONTRIBUTING.md). Security reports: [SECURITY.md](SECURITY.md).
 
 Bekirhan Karakurt - [github.com/bekirhankarakurt](https://github.com/bekirhankarakurt)
