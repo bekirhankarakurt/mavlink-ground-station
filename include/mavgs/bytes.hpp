@@ -24,6 +24,7 @@ class Writer {
     }
   }
 
+  // cppcheck-suppress functionStatic ; false positive: forwards to the integral overload on this
   void put(float value) {
     std::uint32_t bits = 0;
     std::memcpy(&bits, &value, sizeof bits);
