@@ -16,7 +16,7 @@ std::string fmt(const char* format, Args... args) {
   return buffer;
 }
 
-double tidy(double v) { return std::round(v * 10.0) / 10.0 + 0.0; }  // avoids "-0.0"
+double tidy(double v) { return (std::round(v * 10.0) / 10.0) + 0.0; }  // avoids "-0.0"
 
 const char* kGreen = "\x1b[32m";
 const char* kYellow = "\x1b[33m";
