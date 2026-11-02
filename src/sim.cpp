@@ -134,8 +134,8 @@ void VehicleSim::fly_towards(double target_n, double target_e, double target_up,
   // Attitude from horizontal acceleration, yaw follows the direction of travel.
   const double an = (vn_ - prev_vn) / dt;
   const double ae = (ve_ - prev_ve) / dt;
-  const double forward = an * std::cos(yaw_) + ae * std::sin(yaw_);
-  const double right = -an * std::sin(yaw_) + ae * std::cos(yaw_);
+  const double forward = (an * std::cos(yaw_)) + (ae * std::sin(yaw_));
+  const double right = (-an * std::sin(yaw_)) + (ae * std::cos(yaw_));
   roll_ = std::atan2(right, kGravity);
   pitch_ = -std::atan2(forward, kGravity);
   if (ground_speed() > 1.0) {
@@ -261,7 +261,7 @@ void VehicleSim::advance_physics(double dt) {
     }
     north_ += vn_ * dt;
     east_ += ve_ * dt;
-    up_ = std::max(0.0, up_ + vu_ * dt);
+    up_ = std::max(0.0, up_ + (vu_ * dt));
     if (up_ == 0.0 && vu_ < 0) vu_ = 0;
   }
   yaw_ = wrap_pi(yaw_);
@@ -270,7 +270,7 @@ void VehicleSim::advance_physics(double dt) {
   yaw_rate_ = wrap_pi(yaw_ - prev_yaw) / dt;
   double drain = 0.0;  // % per second
   if (armed_) drain = airborne() ? 0.06 : 0.01;
-  charge_ = std::max(0.0, charge_ - dt * drain);
+  charge_ = std::max(0.0, charge_ - (dt * drain));
 }
 
 // ---------------------------------------------------------------- telemetry
@@ -309,7 +309,7 @@ std::vector<Bytes> VehicleSim::step(std::uint64_t now_us) {
     SysStatus s;
     s.sensors_present = s.sensors_enabled = s.sensors_health = 0x2F;
     s.load = 180;
-    const double mv = kBatteryEmptyMv + (kBatteryFullMv - kBatteryEmptyMv) * charge_ / 100.0;
+    const double mv = kBatteryEmptyMv + (((kBatteryFullMv - kBatteryEmptyMv) * charge_) / 100.0);
     s.voltage_battery = static_cast<std::uint16_t>(mv);
     std::int16_t current = 40;  // cA
     if (armed_) current = airborne() ? 1050 : 300;
@@ -365,7 +365,7 @@ std::vector<Bytes> VehicleSim::step(std::uint64_t now_us) {
     if (hdg < 0) hdg += 360.0;
     h.heading = static_cast<std::int16_t>(std::lround(hdg) % 360);
     h.throttle = static_cast<std::uint16_t>(
-        armed_ ? std::clamp(std::lround(45 + vu_ * 8.0), 0L, 100L) : 0L);
+        armed_ ? std::clamp(std::lround(45 + (vu_ * 8.0)), 0L, 100L) : 0L);
     emit(h, out);
   }
   if (due(mission_current_) && !mission_.empty()) {
