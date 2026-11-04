@@ -25,19 +25,30 @@ if(MAVGS_SANITIZE)
 endif()
 
 add_library(mavgs STATIC
+  src/cli.cpp
   src/dashboard.cpp
   src/frame.cpp
   src/link.cpp
   src/messages.cpp
   src/mission.cpp
+  src/script.cpp
   src/sim.cpp
   src/station.cpp
   src/stats.cpp
+  src/terminal.cpp
   src/tlog.cpp
   src/vehicle_state.cpp
 )
 target_include_directories(mavgs PUBLIC include PRIVATE src)
 target_link_libraries(mavgs PUBLIC mavgs_options)
+
+if(MAVGS_BUILD_APPS)
+  add_executable(mavgcs apps/mavgcs.cpp)
+  target_link_libraries(mavgcs PRIVATE mavgs)
+  add_executable(mavsim apps/mavsim.cpp)
+  target_link_libraries(mavsim PRIVATE mavgs)
+  install(TARGETS mavgcs mavsim RUNTIME DESTINATION bin)
+endif()
 
 if(MAVGS_BUILD_TESTS)
   enable_testing()
