@@ -9,4 +9,5 @@ endfunction()
 
 mavgs_add_test(test_frame)
 mavgs_add_test(test_messages)
+mavgs_add_test(test_mission)
 mavgs_add_test(test_stats_tlog_link)

@@ -1,0 +1,8 @@
+# Square survey pattern around the PX4 SITL default home (Zurich).
+# Altitudes are metres above the takeoff point.
+takeoff 15
+waypoint 47.397742 8.546594 20        # ~75 m east
+waypoint 47.398642 8.546594 20 3      # ~100 m north, hold 3 s
+waypoint 47.398642 8.545594 20
+waypoint 47.397742 8.545594 20
+rtl
