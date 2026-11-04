@@ -29,8 +29,8 @@ std::optional<Endpoint> parse_endpoint(const std::string& text) {
   return ep;
 }
 
-UdpLink::UdpLink(std::uint16_t bind_port, std::optional<Endpoint> peer) {
-  fd_ = ::socket(AF_INET, SOCK_DGRAM, 0);
+UdpLink::UdpLink(std::uint16_t bind_port, const std::optional<Endpoint>& peer)
+    : fd_(::socket(AF_INET, SOCK_DGRAM, 0)) {
   if (fd_ < 0) throw std::runtime_error("cannot create UDP socket");
 
   sockaddr_in addr{};
@@ -92,11 +92,12 @@ std::string UdpLink::describe() const { return "udp:" + std::to_string(local_por
 ReplayLink::ReplayLink(std::vector<TlogRecord> records, double speed, std::string source)
     : records_(std::move(records)), speed_(speed > 0.0 ? speed : 1.0), source_(std::move(source)) {}
 
-std::chrono::steady_clock::time_point ReplayLink::due(std::size_t index) const {
+std::chrono::steady_clock::time_point ReplayLink::due(std::size_t index,
+                                                       std::chrono::steady_clock::time_point start) const {
   const auto first = records_.front().timestamp_us;
   const auto ts = records_[index].timestamp_us;
   const double offset_us = static_cast<double>(ts > first ? ts - first : 0) / speed_;
-  return *start_ + std::chrono::microseconds(static_cast<std::int64_t>(offset_us));
+  return start + std::chrono::microseconds(static_cast<std::int64_t>(offset_us));
 }
 
 bool ReplayLink::receive(Bytes& out, std::chrono::milliseconds timeout) {
@@ -107,7 +108,7 @@ bool ReplayLink::receive(Bytes& out, std::chrono::milliseconds timeout) {
   if (!start_) start_ = std::chrono::steady_clock::now();
 
   const auto now = std::chrono::steady_clock::now();
-  const auto when = due(next_);
+  const auto when = due(next_, *start_);
   if (when > now) {
     const auto wait = std::min<std::chrono::steady_clock::duration>(when - now, timeout);
     std::this_thread::sleep_for(wait);

@@ -52,7 +52,7 @@ std::vector<MissionItem> parse_mission(std::istream& in) {
   int line = 0;
   while (std::getline(in, text)) {
     ++line;
-    text = text.substr(0, text.find('#'));
+    if (const auto hash = text.find('#'); hash != std::string::npos) text.resize(hash);
     std::istringstream words(text);
     std::vector<std::string> t;
     for (std::string w; words >> w;) t.push_back(w);

@@ -14,7 +14,7 @@
 namespace {
 
 volatile std::sig_atomic_t g_stop = 0;
-void on_signal(int) { g_stop = 1; }
+void on_signal(int /*signal*/) { g_stop = 1; }
 
 std::vector<mavgs::OptionSpec> option_specs() {
   return {
@@ -34,7 +34,9 @@ void parse_home(const std::string& text, mavgs::SimConfig& config) {
   std::istringstream in(text);
   char c1 = 0;
   char c2 = 0;
-  double lat = 0, lon = 0, alt = 0;
+  double lat = 0;
+  double lon = 0;
+  double alt = 0;
   if (!(in >> lat >> c1 >> lon >> c2 >> alt) || c1 != ',' || c2 != ',' || lat < -90 || lat > 90 ||
       lon < -180 || lon > 180) {
     throw std::invalid_argument("--home expects LAT,LON,ALT");

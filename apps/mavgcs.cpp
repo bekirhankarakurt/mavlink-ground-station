@@ -22,9 +22,9 @@
 namespace {
 
 volatile std::sig_atomic_t g_stop = 0;
-void on_signal(int) { g_stop = 1; }
+void on_signal(int /*signal*/) { g_stop = 1; }
 
-enum class Ui { Dashboard, Log };
+enum class Ui : std::uint8_t { Dashboard, Log };
 
 constexpr std::chrono::milliseconds kPollInterval{20};
 constexpr std::uint64_t kDashboardPeriodUs = 200'000;

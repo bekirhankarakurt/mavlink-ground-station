@@ -20,7 +20,7 @@ class Writer {
     using U = std::make_unsigned_t<T>;
     const auto u = static_cast<std::uint64_t>(static_cast<U>(value));
     for (std::size_t i = 0; i < sizeof(T); ++i) {
-      bytes_.push_back(static_cast<std::uint8_t>((u >> (8 * i)) & 0xFFu));
+      bytes_.push_back(static_cast<std::uint8_t>((u >> (8 * i)) & 0xFFU));
     }
   }
 
