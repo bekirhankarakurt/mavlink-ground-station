@@ -38,8 +38,9 @@ class Link {
   [[nodiscard]] virtual bool is_replay() const { return false; }
 };
 
-/// IPv4 UDP link. Replies go to the peer that last sent a datagram, which is
-/// how PX4/ArduPilot SITL expects a ground station to behave.
+/// IPv4 UDP link. Replies go to the first peer that sends a datagram, which is
+/// how PX4/ArduPilot SITL expects a ground station to behave. A later sender
+/// does not retarget the link.
 class UdpLink final : public Link {
  public:
   /// Binds `bind_port` on all interfaces (0 picks a free port). `peer` is the
@@ -61,6 +62,7 @@ class UdpLink final : public Link {
   int fd_ = -1;
   std::uint16_t local_port_ = 0;
   bool has_peer_ = false;
+  bool peer_locked_ = false;     // a received datagram has chosen the peer
   std::uint32_t peer_addr_ = 0;  // network byte order
   std::uint16_t peer_port_ = 0;  // network byte order
 };

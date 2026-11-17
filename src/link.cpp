@@ -80,9 +80,13 @@ bool UdpLink::receive(Bytes& out, std::chrono::milliseconds timeout) {
   const auto n = ::recvfrom(fd_, buffer, sizeof buffer, 0, reinterpret_cast<sockaddr*>(&from),
                             &from_len);
   if (n <= 0) return false;
-  peer_addr_ = from.sin_addr.s_addr;
-  peer_port_ = from.sin_port;
-  has_peer_ = true;
+  // The first sender chooses the peer. A later datagram must not steal replies.
+  if (!peer_locked_) {
+    peer_addr_ = from.sin_addr.s_addr;
+    peer_port_ = from.sin_port;
+    has_peer_ = true;
+    peer_locked_ = true;
+  }
   out.assign(buffer, buffer + n);
   return true;
 }

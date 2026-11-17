@@ -146,6 +146,51 @@ TEST(udp_link_exchanges_datagrams_and_learns_peer) {
   CHECK(!b.receive(got, 10ms));
 }
 
+TEST(udp_link_locks_peer_after_the_first_datagram) {
+  UdpLink station(0);
+  UdpLink vehicle(0, Endpoint{"127.0.0.1", station.local_port()});
+  UdpLink other(0, Endpoint{"127.0.0.1", station.local_port()});
+
+  Bytes got;
+  CHECK(vehicle.send({1}));
+  CHECK(station.receive(got, 1000ms));
+  CHECK_EQ(got, (Bytes{1}));
+
+  CHECK(other.send({2}));
+  CHECK(station.receive(got, 1000ms));
+  CHECK_EQ(got, (Bytes{2}));  // still delivered
+
+  CHECK(station.send({9}));  // replies stay with the first sender
+  CHECK(vehicle.receive(got, 1000ms));
+  CHECK_EQ(got, (Bytes{9}));
+  CHECK(!other.receive(got, 10ms));
+
+  UdpLink placeholder(0);
+  UdpLink directed(0, Endpoint{"127.0.0.1", placeholder.local_port()});
+  UdpLink heard(0, Endpoint{"127.0.0.1", directed.local_port()});
+  UdpLink late(0, Endpoint{"127.0.0.1", directed.local_port()});
+
+  CHECK(directed.send({1}));
+  CHECK(placeholder.receive(got, 1000ms));
+  CHECK_EQ(got, (Bytes{1}));
+
+  CHECK(heard.send({3}));  // first datagram replaces the initial destination
+  CHECK(directed.receive(got, 1000ms));
+  CHECK_EQ(got, (Bytes{3}));
+  CHECK(directed.send({4}));
+  CHECK(heard.receive(got, 1000ms));
+  CHECK_EQ(got, (Bytes{4}));
+  CHECK(!placeholder.receive(got, 10ms));
+
+  CHECK(late.send({5}));
+  CHECK(directed.receive(got, 1000ms));
+  CHECK_EQ(got, (Bytes{5}));
+  CHECK(directed.send({6}));
+  CHECK(heard.receive(got, 1000ms));
+  CHECK_EQ(got, (Bytes{6}));
+  CHECK(!late.receive(got, 10ms));
+}
+
 TEST(udp_link_reports_port_in_use) {
   UdpLink a(0);
   CHECK_THROWS(UdpLink(a.local_port()));
